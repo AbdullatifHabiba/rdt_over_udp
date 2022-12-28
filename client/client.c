@@ -18,34 +18,35 @@
 
 
 int main(void){
+    printf("you are in main\n");
 
-    FILE *fp = fopen("client.in", "r");
+   FILE *fp = fopen("client.in", "r");
       if(fp == NULL) {
           perror("Unable to open file!");
          exit(1);
     }
-     int stopAndWait=1;
-    int selectiveRepeat=2;  
- 
-     
-     char *line = NULL;
-     size_t len = 0;
+         printf("file opened \n");
+
+       char *line = NULL;
+       size_t len = 0;
       int port;
-      char*address;
-      char*file;
+      char*address =NULL;
+      char*file =NULL;
  
-       getline(&line, &len, fp);
-       address=line;
+       getline(&address, &len, fp);
        getline(&line, &len, fp);
        sscanf(line, "%d", &port);
-       getline(&line, &len, fp);
-       file=line;
+       getline(&file, &len, fp);
 
     fclose(fp);
     free(line);     
 
+
+    printf("port = %d ",port);
+    printf("address = %s ",address);
+    printf("file = %s \n ",file);
+
     int socket_client;
-    
        // Create socket:
     socket_client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     
@@ -69,17 +70,17 @@ int main(void){
     }
     
     int type;
-    scanf("choose type of communication 1:stopandwait 2:selectiveRepeat \n %d",&type);
+    printf("choose type of communication 1:stopandwait 2:selectiveRepeat \n ");
+    scanf("%d",&type);
     if(type==1){
         Packet packet;
         packet.checksum=0;
         packet.length=0;
         packet.seq_num=0;
         strcpy( packet.data,file);
-        // sendto(socket_client, (char*)"1.txt", sizeof(char), MSG_CONFIRM, server_addr, sizeof(*server_addr));
         send_packet(packet,socket_client,(struct sockaddr *)&server_addr);
         Ack_packet ack_p = recv_ack_packet(socket_client,(struct sockaddr *)& server_addr);
-        printf(" ack= %d",ack_p.ack_num);
+        printf(" ack= %d\n",ack_p.ack_num);
 
 
 
