@@ -1,14 +1,18 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
+#include <signal.h>
+#include <pthread.h>
+#include <errno.h>
 
-
-
-
-
-
-
-
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     int sockfd;
     struct sockaddr_in servaddr;

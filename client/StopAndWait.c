@@ -1,4 +1,3 @@
-
 #include "StopAndWait.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,9 +8,9 @@
 
 int packet_numbers = 0;
 
-Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
+struct Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
 {
-    Packet packet;
+    struct Packet packet;
     int n;
     socklen_t len;
     len = sizeof(*pservaddr);
@@ -25,9 +24,9 @@ Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
     return packet;
     
 };
-Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
+struct Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
 {
-    Ack_packet ack_packet;
+    struct Ack_packet ack_packet;
     int n;
     socklen_t len;
     len = sizeof(*pservaddr);
@@ -37,13 +36,13 @@ Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
     return ack_packet;
 };
 
-void send_packet(Packet packet, int sockfd, const struct sockaddr *pservaddr)
+void send_packet(struct Packet packet, int sockfd, const struct sockaddr *pservaddr)
 {
     int n;
     n = sendto(sockfd, &packet, sizeof(packet), MSG_CONFIRM, pservaddr, sizeof(*pservaddr));
     if (n < 0) error("ERROR in sendto packet");
 };
-void send_ack_packet( Ack_packet ack_packet, int sockfd, const struct sockaddr *pservaddr)
+void send_ack_packet(struct Ack_packet ack_packet, int sockfd, const struct sockaddr *pservaddr)
 {
     int n;
     n = sendto(sockfd, (void*)&ack_packet, sizeof(ack_packet), MSG_CONFIRM, pservaddr, sizeof(*pservaddr));
@@ -74,7 +73,7 @@ int get_number_of_packets() {
 
 void send_file(FILE *fp, int sockfd, const struct sockaddr *pservaddr, socklen_t servlen)
 {
-    Packet packet;
+    struct Packet packet;
     int packet_num = 0;
     int ack_num = 0;
     int n;
@@ -97,7 +96,7 @@ void send_file(FILE *fp, int sockfd, const struct sockaddr *pservaddr, socklen_t
 
 void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr, socklen_t *servlen)
 {
-    Packet packet;
+    struct Packet packet;
     int n;
     while (1)
     {

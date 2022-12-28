@@ -1,3 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 struct Packet {
     int seq_num;
     int checksum;
@@ -13,8 +20,8 @@ struct Ack_packet {
 
 void send_packet(struct Packet *pkt,int sockfd, struct sockaddr *servaddr);
 void send_ack_packet(struct Ack_packet *ack,int sockfd, struct sockaddr *servaddr);
-Packet recv_packet(int sockfd, struct sockaddr *servaddr, );
-Ack_packet recv_ack_packet(int sockfd, struct sockaddr *servaddr);
+struct Packet recv_packet(int sockfd, struct sockaddr *servaddr, );
+struct Ack_packet recv_ack_packet(int sockfd, struct sockaddr *servaddr);
 void get_loss_packet(double prob_of_loss, int seednumber);
 void sand_file(File *filename, int sockfd, struct sockaddr *servaddr, int servlen);
 void recv_file(File *filename, int sockfd, struct sockaddr *servaddr, int servlen);
