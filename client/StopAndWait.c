@@ -1,4 +1,4 @@
-#include "StopAndWait.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,14 +12,15 @@
 #include <signal.h>
 #include <pthread.h>
 #include <errno.h>
-#include<math.h>
+#include <math.h>
+#include "StopAndWait.h"
 # define maxbuffer 50
 
 int packet_numbers = 0;
 
-struct Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
+Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
 {
-    struct Packet packet;
+    Packet packet;
     int n;
     socklen_t len;
     len = sizeof(*pservaddr);
@@ -33,9 +34,9 @@ struct Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
     return packet;
     
 };
-struct Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
+Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
 {
-    struct Ack_packet ack_packet;
+    Ack_packet ack_packet;
     int n;
     socklen_t len;
     len = sizeof(*pservaddr);
@@ -81,9 +82,9 @@ void  get_loss_packets(double prob_of_loss, int seednumber){
 }
 
 
-void send_file(FILE *fp, int sockfd, const struct sockaddr *pservaddr)
+void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
 {
-    struct Packet packet;
+    Packet packet;
     int packet_num = 0;
     int ack_num = 0;
     int n;
@@ -91,22 +92,21 @@ void send_file(FILE *fp, int sockfd, const struct sockaddr *pservaddr)
     {
         packet.seq_num = packet_num;
         packet.length = fread(packet.data, 1, maxbuffer, fp);
-        if (packet.length == 0)
-            break;
-        send_packet(packet, sockfd, (struct sockaddr *)&pservaddr);
-       Ack_packet ack_p = recv_ack_packet(sockfd,(struct sockaddr *)& pservaddr);
+        if (packet.length == 0)break;
+       send_packet(packet, sockfd, pservaddr);
+       Ack_packet ack_p = recv_ack_packet(sockfd,pservaddr);
         if (ack_p.ack_num != packet_num)
             perror("ERROR: ack out of order");
         packet_num++;
     }
     packet.seq_num = packet_num;
     packet.length = 0;
-    send_packet(packet, sockfd, (struct sockaddr *)&pservaddr);
+    send_packet(packet, sockfd,pservaddr);
 };
 
 void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 {
-    struct Packet packet;
+    Packet packet;
     int n;
     while (1)
     {
@@ -116,10 +116,12 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
         fwrite(packet.data, 1, packet.length, fp);
         Ack_packet p;
         p.ack_num=packet_numbers;
+        
         send_ack_packet(p, sockfd, pservaddr);
         packet_numbers++;
     }
 };
+
 
 
 

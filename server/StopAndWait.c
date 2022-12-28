@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <math.h>
 #include "StopAndWait.h"
-# define maxbuffer 50
+# define maxbuffer 500
 
 int packet_numbers = 0;
 
@@ -82,7 +82,7 @@ void  get_loss_packets(double prob_of_loss, int seednumber){
 }
 
 
-void send_file(FILE *fp, int sockfd, const struct sockaddr *pservaddr)
+void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
 {
     Packet packet;
     int packet_num = 0;
@@ -94,15 +94,16 @@ void send_file(FILE *fp, int sockfd, const struct sockaddr *pservaddr)
         packet.length = fread(packet.data, 1, maxbuffer, fp);
         if (packet.length == 0)
             break;
-        send_packet(packet, sockfd, (struct sockaddr *)&pservaddr);
-       Ack_packet ack_p = recv_ack_packet(sockfd,(struct sockaddr *)& pservaddr);
+        send_packet(packet, sockfd, pservaddr);
+
+       Ack_packet ack_p = recv_ack_packet(sockfd,pservaddr);
         if (ack_p.ack_num != packet_num)
             perror("ERROR: ack out of order");
         packet_num++;
     }
     packet.seq_num = packet_num;
     packet.length = 0;
-    send_packet(packet, sockfd, (struct sockaddr *)&pservaddr);
+    send_packet(packet, sockfd, pservaddr);
 };
 
 void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
@@ -116,10 +117,10 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
             break;
         fwrite(packet.data, 1, packet.length, fp);
         Ack_packet p;
-        p.ack_num=packet_numbers;
+        p.ack_num=packet.seq_num;
         
         send_ack_packet(p, sockfd, pservaddr);
-        packet_numbers++;
+       // packet_numbers++;
     }
 };
 

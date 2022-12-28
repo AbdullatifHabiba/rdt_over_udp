@@ -15,6 +15,12 @@
 #include <math.h>
 #include "SelectiveRep.h"
 
+int get_file_size(FILE*file ) {
+    fseek(file, 0, SEEK_END);
+    int x = ftell(file);
+    rewind(file);
+    return x;
+}
 int main(void){
     FILE *fp = fopen("server.in", "r");
       if(fp == NULL) {
@@ -83,19 +89,20 @@ int main(void){
      memset(&clientAddress, 0, sizeof(clientAddress));
 
             int type;
-            printf("choose type of communication 1:stopandwait 2:selectiveRepeat \n");
+            printf("choose type of communication 1:stopandwait 2:selectiveRepeat = ");
                 scanf("%d",&type);
                 if(type==1){
 
               Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
               printf("%s\n",pak.data);
               Ack_packet ackk;
-              ackk.ack_num=1;
+              FILE*fp=fopen (pak.data, "rb");
+              ackk.ack_num= (int)ceil (1.0*get_file_size(fp)/500);
               ackk.checksum=0;
               ackk.length=0;
 
               send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-                
+                send_file(fp,socket_server,(struct sockaddr*)&clientAddress);
                 //stop and wait
                 // create packet to send to client
                 //send packet to client

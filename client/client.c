@@ -19,7 +19,6 @@
 
 int main(void){
     printf("you are in main\n");
-
    FILE *fp = fopen("client.in", "r");
       if(fp == NULL) {
           perror("Unable to open file!");
@@ -46,6 +45,7 @@ int main(void){
     printf("address = %s ",address);
     printf("file = %s \n ",file);
 
+    int number_of_packets;
     int socket_client;
        // Create socket:
     socket_client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -70,7 +70,7 @@ int main(void){
     }
     
     int type;
-    printf("choose type of communication 1:stopandwait 2:selectiveRepeat \n ");
+    printf("choose type of communication 1:stopandwait 2:selectiveRepeat = ");
     scanf("%d",&type);
     if(type==1){
         Packet packet;
@@ -80,12 +80,17 @@ int main(void){
         strcpy( packet.data,file);
         send_packet(packet,socket_client,(struct sockaddr *)&server_addr);
         Ack_packet ack_p = recv_ack_packet(socket_client,(struct sockaddr *)& server_addr);
-        printf(" ack= %d\n",ack_p.ack_num);
+
+        number_of_packets= ack_p.ack_num;
+
+        printf(" number of packets= %d\n",number_of_packets);
+        FILE*out= fopen(file,"wb");
+        recv_file(out,socket_client,(struct sockaddr *)& server_addr);
 
 
 
     //stop and wait
-    // create packet to send to server
+    //create packet to send to server
     //send packet to server
     //recieve ack packet from server
     
