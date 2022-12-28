@@ -88,7 +88,7 @@ int main(void){
                 if(type==1){
 
               Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
-              printf("%s",pak.data);
+              printf("%s\n",pak.data);
               Ack_packet ackk;
               ackk.ack_num=1;
               ackk.checksum=0;
