@@ -21,27 +21,23 @@ int main(void){
           perror("Unable to open file!");
          exit(1);
     }
+    char *line = NULL;
+    size_t len = 0;
+    int port;
+    int seed;
+    float prob;
  
-     char *line = NULL;
-     size_t len = 0;
-      int port;
-      int seed;
-      float prob;
- 
-       getline(&line, &len, fp);
-       sscanf(line, "%d", &port);
-       getline(&line, &len, fp);
-       sscanf(line, "%d", &seed);
-       getline(&line, &len, fp);
-       sscanf(line, "%f", &prob);
-
+    getline(&line, &len, fp);
+    sscanf(line, "%d", &port);
+    getline(&line, &len, fp);
+    sscanf(line, "%d", &seed);
+    getline(&line, &len, fp);
+    sscanf(line, "%f", &prob);
     fclose(fp);
     free(line); 
     printf("port = %d ",port);
     printf("seed = %d ",seed);
     printf("port = %f ",prob);
-
-
     
     int socket_server;
     // Create UDP socket:
@@ -53,14 +49,13 @@ int main(void){
     }
     printf("Socket created successfully\n");
     
-
     int opt = 1;
     if (setsockopt(socket_server, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
         perror("setsockopt Error");
         exit(1);
     }
  
-     struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr;
 
     memset(&server_addr, 0, sizeof(server_addr));
     // Set port and IP:
@@ -68,55 +63,45 @@ int main(void){
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    
     // Bind to the set port and IP:
     if(bind(socket_server, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
         printf("Couldn't bind to the port\n");
         return -1;
     }
     printf("Done with binding\n");
-    
-    
-    
-    
+        
     struct sockaddr_in clientAddress;
-     memset(&clientAddress, 0, sizeof(clientAddress));
-
-            int type;
-            printf("choose type of communication 1:stopandwait 2:selectiveRepeat \n");
-                scanf("%d",&type);
-                if(type==1){
-
-              Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
-              printf("%s\n",pak.data);
-              Ack_packet ackk;
-              ackk.ack_num=1;
-              ackk.checksum=0;
-              ackk.length=0;
-
-              send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-                
-                //stop and wait
-                // create packet to send to client
-                //send packet to client
-                //recieve ack packet from client
-                
-                
-                }
-                else if(type ==2)
-                {
-                    //selectiveRepeat
-                // create packet to send to client
-                //send packet to client
-                //recieve ack packet from client
-                
-                }
-                else{
-                    printf("choose correct type");
-                    exit(1);
-                }
+    memset(&clientAddress, 0, sizeof(clientAddress));
+    int type;
+    printf("choose type of communication 1:stopandwait 2:selectiveRepeat \n");
+    scanf("%d", &type);
+    if(type == 1){
+        Packet pak = recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
+        printf("%s\n", pak.data);
+        Ack_packet ackk;
+        FILE* fp = fopen(pak.data, "rb");
+        ackk.ack_num = (int) ceil(1.0 * get_size(fp) / 500);
+        ackk.checksum = 0;
+        ackk.length = 0;
+        if(access(pak.data, F_OK) == 0)
+        {
+            send_ack_packet(ackk,socket_server, (struct sockaddr*)&clientAddress);
+            send_file(fp, socket_server, (struct sockaddr*)&clientAddress);
+        }
+    }
+    else if(type == 2)
+    {
+        //selectiveRepeat
+        // create packet to send to client
+        //send packet to client
+        //recieve ack packet from client        
+    }
+    else{
+        printf("choose correct type");
+        exit(1);
+    }
     
-   /* while (1)
+    /* while (1)
     {
         memset(&clientAddress, 0, sizeof(clientAddress));
         pid_t pid = fork();
@@ -129,46 +114,37 @@ int main(void){
         if (pid == 0)
         {
             int type;
-                scanf("choose type of communication 1:stopandwait 2:selectiveRepeat \n %d",&type);
-                if(type==1){
-
-              Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress)   ; 
-              printf("%s",pak.data);
-              Ack_packet ackk;
-              ackk.ack_num=1;
-              ackk.checksum=0;
-              ackk.length=0;
-
-              send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-                    //stop and wait
+            scanf("choose type of communication 1:stopandwait 2:selectiveRepeat \n %d",&type);
+            if(type==1){
+                Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress)   ; 
+                printf("%s",pak.data);
+                Ack_packet ackk;
+                ackk.ack_num=1;
+                ackk.checksum=0;
+                ackk.length=0;
+            
+                send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
+                //stop and wait
                 // create packet to send to client
                 //send packet to client
-                //recieve ack packet from client
-                
-                
-                }
-                else if(type ==2)
-                {
-                    //selectiveRepeat
+                //recieve ack packet from client    
+            }
+            else if(type ==2)
+            {
+                //selectiveRepeat
                 // create packet to send to client
                 //send packet to client
-                //recieve ack packet from client
-                
-                }
-                else{
-                    printf("choose correct type");
-                    exit(1);
-                }
-                
-
-          
+                //recieve ack packet from client   
+            }
+            else{
+                printf("choose correct type");
+                exit(1);
+            }         
         }
         else
         {
             close(socket_server);
         }
-           
-
     }*/
     
     return 0;

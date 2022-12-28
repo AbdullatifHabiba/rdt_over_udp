@@ -18,49 +18,47 @@
 int main(void){
     printf("you are in main\n");
 
-   FILE *fp = fopen("client.in", "r");
-      if(fp == NULL) {
-          perror("Unable to open file!");
-         exit(1);
+    FILE *fp = fopen("client.in", "r");
+    if(fp == NULL) {
+        perror("Unable to open file!");
+        exit(1);
     }
-         printf("file opened \n");
+    printf("file opened \n");
 
-       char *line = NULL;
-       size_t len = 0;
-      int port;
-      char*address =NULL;
-      char*file =NULL;
+    char *line = NULL;
+    size_t len = 0;
+    int port;
+    char* address = NULL;
+    char* file = NULL;
  
-       getline(&address, &len, fp);
-       getline(&line, &len, fp);
-       sscanf(line, "%d", &port);
-       getline(&file, &len, fp);
+    getline(&address, &len, fp);
+    getline(&line, &len, fp);
+    sscanf(line, "%d", &port);
+    getline(&file, &len, fp);
 
     fclose(fp);
     free(line);     
-
 
     printf("port = %d ",port);
     printf("address = %s ",address);
     printf("file = %s \n ",file);
 
     int socket_client;
-       // Create socket:
+    // Create socket:
     socket_client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    
     if(socket_client < 0){
         printf("Error while creating socket\n");
         return -1;
     }
     printf("Socket created successfully\n");
-   
+
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = inet_addr(address);
-    //connect to server
 
+    //connect to server
     if (connect(socket_client, (struct sockaddr*)&server_addr, sizeof(server_addr)) != 0)
     {
         printf("connection error\n");
@@ -69,24 +67,20 @@ int main(void){
     
     int type;
     printf("choose type of communication 1:stopandwait 2:selectiveRepeat \n ");
-    scanf("%d",&type);
-    if(type==1){
+    scanf("%d", &type);
+    if(type == 1){
         Packet packet;
-        packet.checksum=0;
-        packet.length=0;
-        packet.seq_num=0;
-        strcpy( packet.data,file);
+        packet.checksum = 0;
+        packet.length = 0;
+        packet.seq_num = 0;
+        strcpy(packet.data, file);
         send_packet(packet,socket_client,(struct sockaddr *)&server_addr);
         Ack_packet ack_p = recv_ack_packet(socket_client,(struct sockaddr *)& server_addr);
-        printf(" ack= %d\n",ack_p.ack_num);
-
-
-
-    //stop and wait
-    // create packet to send to server
-    //send packet to server
-    //recieve ack packet from server
-    
+        printf("ack= %d\n",ack_p.ack_num);
+        if(access(packet.data, F_OK) != 0)
+        {
+            recv_file(fp, socket_client, (struct sockaddr*)&server_addr);
+        }
     }
     else if(type ==2)
     {
