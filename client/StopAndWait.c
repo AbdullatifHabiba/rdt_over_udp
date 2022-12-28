@@ -1,4 +1,3 @@
-
 #include "StopAndWait.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,9 +17,9 @@
 
 int packet_numbers = 0;
 
-Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
+struct Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
 {
-    Packet packet;
+    struct Packet packet;
     int n;
     socklen_t len;
     len = sizeof(*pservaddr);
@@ -34,9 +33,9 @@ Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
     return packet;
     
 };
-Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
+struct Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
 {
-    Ack_packet ack_packet;
+    struct Ack_packet ack_packet;
     int n;
     socklen_t len;
     len = sizeof(*pservaddr);
@@ -84,7 +83,7 @@ void  get_loss_packets(double prob_of_loss, int seednumber){
 
 void send_file(FILE *fp, int sockfd, const struct sockaddr *pservaddr)
 {
-    Packet packet;
+    struct Packet packet;
     int packet_num = 0;
     int ack_num = 0;
     int n;
@@ -107,7 +106,7 @@ void send_file(FILE *fp, int sockfd, const struct sockaddr *pservaddr)
 
 void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 {
-    Packet packet;
+    struct Packet packet;
     int n;
     while (1)
     {

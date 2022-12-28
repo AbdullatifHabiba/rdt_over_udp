@@ -1,4 +1,4 @@
- struct Packet {
+struct Packet {
     int seq_num;
     int checksum;
     int length;
