@@ -75,11 +75,9 @@ int main(void){
         packet.checksum=0;
         packet.length=0;
         packet.seq_num=0;
-
-        packet.data="1.txt";
-        
+        strcpy( packet.data,file);
+        // sendto(socket_client, (char*)"1.txt", sizeof(char), MSG_CONFIRM, server_addr, sizeof(*server_addr));
         send_packet(packet,socket_client,(struct sockaddr *)&server_addr);
-
         Ack_packet ack_p = recv_ack_packet(socket_client,(struct sockaddr *)& server_addr);
         printf(" ack= %d",ack_p.ack_num);
 

@@ -117,7 +117,6 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
         fwrite(packet.data, 1, packet.length, fp);
         Ack_packet p;
         p.ack_num=packet_numbers;
-        
         send_ack_packet(p, sockfd, pservaddr);
         packet_numbers++;
     }

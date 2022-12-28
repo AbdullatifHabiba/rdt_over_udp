@@ -87,7 +87,7 @@ int main(void){
                 scanf("%d",&type);
                 if(type==1){
 
-              Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress)   ; 
+              Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
               printf("%s",pak.data);
               Ack_packet ackk;
               ackk.ack_num=1;
@@ -95,7 +95,8 @@ int main(void){
               ackk.length=0;
 
               send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-                    //stop and wait
+                
+                //stop and wait
                 // create packet to send to client
                 //send packet to client
                 //recieve ack packet from client
