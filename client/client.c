@@ -12,10 +12,8 @@
 #include <pthread.h>
 #include <errno.h>
 
-
 #include "StopAndWait.h"
 #include "SelectiveRep.h"
-
 
 int main(void){
 
