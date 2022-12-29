@@ -32,12 +32,16 @@
     uint32_t length;
 }Ack_packet;
 
-int number_of_Packets=0;
+int number_of_Packets;
+double loss_prob;
+int seed_num;
+int time_out;
+
 void send_packet( Packet pkt,int sockfd,  struct sockaddr *servaddr);
 void send_ack_packet( Ack_packet ack,int sockfd, struct sockaddr *servaddr);
 Packet recv_packet(int packet_num,int sockfd, struct sockaddr *servaddr );
 Ack_packet recv_ack_packet(int sockfd, struct sockaddr *servaddr, int time_out, int* status);
-void get_loss_packet(double prob_of_loss, int seednumber, int lost_packets_array[], int lost_packets);
+void get_loss_packet(double prob_of_loss, int seednumber, int lost_packets_array[]);
 void send_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
 void recv_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
 int get_size(FILE* file);

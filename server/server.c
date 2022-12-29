@@ -15,12 +15,7 @@
 #include <math.h>
 #include "SelectiveRep.h"
 
-int get_file_size(FILE*file ) {
-    fseek(file, 0, SEEK_END);
-    int x = ftell(file);
-    rewind(file);
-    return x;
-}
+
 int main(void){
     FILE *fp = fopen("server.in", "r");
       if(fp == NULL) {
@@ -31,19 +26,19 @@ int main(void){
     size_t len = 0;
     int port;
     int seed;
-    float prob;
+    double prob;
  
     getline(&line, &len, fp);
     sscanf(line, "%d", &port);
     getline(&line, &len, fp);
     sscanf(line, "%d", &seed);
     getline(&line, &len, fp);
-    sscanf(line, "%f", &prob);
+    sscanf(line, "%lf", &prob);
     fclose(fp);
     free(line); 
     printf("port = %d ",port);
     printf("seed = %d ",seed);
-    printf("port = %f ",prob);
+    printf("port = %lf ",prob);
     
     int socket_server;
     // Create UDP socket:
@@ -79,6 +74,8 @@ int main(void){
     struct sockaddr_in clientAddress;
     memset(&clientAddress, 0, sizeof(clientAddress));
     int type;
+    loss_prob=prob;
+    seed_num=seed;
     printf("choose type of communication 1:stopandwait 2:selectiveRepeat = ");
     scanf("%d",&type);
     if(type==1){
@@ -86,9 +83,11 @@ int main(void){
         printf("%s\n",pak.data);
         Ack_packet ackk;
         FILE*fp=fopen (pak.data, "rb");
-        ackk.ack_num= (int)ceil (1.0*get_file_size(fp)/500);
+        int s= (int)ceil (1.0*get_size(fp)/500);
+        ackk.ack_num= s;
         ackk.checksum=0;
         ackk.length=0;
+        number_of_Packets=s;
         send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
         send_file(fp,socket_server,(struct sockaddr*)&clientAddress);
         }

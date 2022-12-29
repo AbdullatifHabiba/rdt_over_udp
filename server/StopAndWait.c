@@ -13,7 +13,6 @@
 #include <errno.h>
 #include <math.h>
 #include "StopAndWait.h"
-# define maxbuffer 500
 
 int sand_index = 0;
 
@@ -36,10 +35,12 @@ Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
 
 Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr, int time_out, int* status)
 {
+     int flags = fcntl(sockfd, F_GETFL);
+    fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
     clock_t start = clock();
-    Ack_packet ack_packet;
-    while (clock() - start < time_out * CLOCKS_PER_SEC)
+    while ((clock() - start)/CLOCKS_PER_SEC < time_out )
     {
+     Ack_packet ack_packet;
         int n;
         socklen_t len;
         len = sizeof(*pservaddr);
@@ -49,11 +50,11 @@ Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr, int time_out,
             *status = 1;
             return ack_packet;
         }
-        if (n < 0)
-            perror("ERROR in recvfrom");
+        
     }
-    *status = 10;
-    return ack_packet;
+    *status = 0;
+         Ack_packet ack_packet2;
+    return ack_packet2;
 }
 
 void send_packet(Packet packet, int sockfd, struct sockaddr *pservaddr)
@@ -72,14 +73,14 @@ void send_ack_packet( Ack_packet ack_packet, int sockfd, struct sockaddr *pserva
 }
 
 int get_number_of_packets() {
-    return packet_numbers;
+    return number_of_Packets;
 }
 
-void get_loss_packet(double prob_of_loss, int seednumber, int lost_packets_array[], int lost_packets){
+void get_loss_packet(double prob_of_loss, int seednumber, int lost_packets_array[]){
     srand(seednumber);
-    int n_packets = get_number_of_packets();
+    int n_packets = number_of_Packets;
     int i;
-    lost_packets = ceil(n_packets * prob_of_loss);
+    int lost_packets = ceil(n_packets * prob_of_loss);
     lost_packets_array[lost_packets];
     for(i = 0;i < lost_packets;i++){
         double random = (double)(rand()%n_packets);
@@ -94,11 +95,17 @@ void get_loss_packet(double prob_of_loss, int seednumber, int lost_packets_array
 
 void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
 {
+ int lost[(int)ceil(number_of_Packets * loss_prob)];
+    get_loss_packet(loss_prob,seed_num,lost);
+    int size = sizeof(lost) / sizeof(lost[0]);
+    printf("lostsize= %d\n",size);
+    
     Packet packet;
     int packet_num = 0;
     int ack_num = 0;
     int n;
     int status = 0;
+    time_out=1;
     while (1)
     {
         packet.seq_num = packet_num;
@@ -106,22 +113,41 @@ void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
         Ack_packet ack_p;
         if (packet.length == 0)
             break;
-        while(status != 1)
+        
+       if(status != 1)
         {
-            send_packet(packet, sockfd, pservaddr);
-            ack_p = recv_ack_packet(sockfd, pservaddr, 100, &status);
+        int ch=check_packet_in_lost_packets(lost,size, packet_num);
+         if( ch== 1){
+           recv_ack_packet(sockfd, pservaddr, time_out, &status);
+          }
         }
+          
+         send_packet(packet, sockfd, pservaddr);
+         ack_p = recv_ack_packet(sockfd, pservaddr, time_out, &status);
+          
+        
         status = 0;
-        if (ack_p.ack_num != packet_num)
-            perror("ERROR: ack out of order");
-        packet_num++;
+        printf("sand %d rec_ack=%d\n",packet_num,ack_p.ack_num);
+        if (ack_p.ack_num != packet_num){perror("ERROR: ack out of order");}
+      packet_num++;
+ 
     }
     packet.seq_num = packet_num;
     packet.length = 0;
     send_packet(packet, sockfd, pservaddr);
    
 };
+int check_packet_in_lost_packets(int lost_packets_array[], int lost_packets, int packet_num){
+    int i;
+    for(i = 0;i < lost_packets;i++){
+        if(lost_packets_array[i] == packet_num){
+            lost_packets_array[i]=-1;
+            return 1;
 
+        }
+    }
+    return 0;
+}
 void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 {
     Packet packet;
@@ -139,10 +165,13 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
        // sand_index++;
     }
 }
-
+  
 int get_size(FILE* file) {
     fseek(file, 0, SEEK_END);
     int size = ftell(file);
     rewind(file);
     return size;
+}
+void send_file_by_window(FILE *fp, int sockfd,  struct sockaddr *pservaddr){
+
 }
