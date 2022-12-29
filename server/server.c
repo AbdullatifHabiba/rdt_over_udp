@@ -97,12 +97,16 @@ int main(void){
               printf("%s\n",pak.data);
               Ack_packet ackk;
               FILE*fp=fopen (pak.data, "rb");
-              ackk.ack_num= (int)ceil (1.0*get_file_size(fp)/500);
+              int psize= (int)ceil (1.0*get_file_size(fp)/500);
+              ackk.ack_num=psize;
               ackk.checksum=0;
               ackk.length=0;
+              number_of_Packets=psize;
 
-              send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-                send_file(fp,socket_server,(struct sockaddr*)&clientAddress);
+              send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);// for intialize socket and files
+        
+                 get_loss_packet(prob,seed);
+                 send_file(l,fp,socket_server,(struct sockaddr*)&clientAddress);
                 //stop and wait
                 // create packet to send to client
                 //send packet to client

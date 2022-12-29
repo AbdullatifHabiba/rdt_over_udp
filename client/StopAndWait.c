@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <math.h>
 #include "StopAndWait.h"
-# define maxbuffer 50
+# define maxbuffer 500
 
 int packet_numbers = 0;
 
@@ -31,6 +31,9 @@ Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
     }
     if (packet.seq_num != packet_num)
         perror("ERROR: packet out of order");
+
+     printf("packet %d received.\n", packet.seq_num);
+
     return packet;
     
 };
@@ -115,6 +118,7 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
             break;
         fwrite(packet.data, 1, packet.length, fp);
         Ack_packet p;
+    
         p.ack_num=packet_numbers;
         
         send_ack_packet(p, sockfd, pservaddr);

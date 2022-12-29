@@ -18,13 +18,11 @@
 
 
 int main(void){
-    printf("you are in main\n");
    FILE *fp = fopen("client.in", "r");
       if(fp == NULL) {
           perror("Unable to open file!");
          exit(1);
     }
-         printf("file opened \n");
 
        char *line = NULL;
        size_t len = 0;
@@ -41,9 +39,9 @@ int main(void){
     free(line);     
 
 
-    printf("port = %d ",port);
-    printf("address = %s ",address);
-    printf("file = %s \n ",file);
+    // printf("port = %d ",port);
+    // printf("address = %s ",address);
+    // printf("file = %s \n ",file);
 
     int number_of_packets;
     int socket_client;
@@ -54,7 +52,7 @@ int main(void){
         printf("Error while creating socket\n");
         return -1;
     }
-    printf("Socket created successfully\n");
+     printf("Socket created successfully\n");
    
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
