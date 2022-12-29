@@ -99,17 +99,23 @@ void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
     int ack_num = 0;
     int n;
     int status = 0;
+    int time_out = 100;
     while (1)
     {
-        packet.seq_num = packet_num;
-        packet.length = fread(packet.data, 1, maxbuffer, fp);
-        Ack_packet ack_p;
         if (packet.length == 0)
             break;
+        packet.seq_num = packet_num;
+        packet.length = fread(packet.data, 1, maxbuffer, fp);
+        if(check_packet_in_lost_packets(lost_packets_array, packet_num) == 1){
+            packet_num++;
+            continue;
+        }
+        Ack_packet ack_p;
         while(status != 1)
         {
             send_packet(packet, sockfd, pservaddr);
-            ack_p = recv_ack_packet(sockfd, pservaddr, 100, &status);
+            
+            ack_p = recv_ack_packet(sockfd, pservaddr, time_out, &status);
         }
         status = 0;
         if (ack_p.ack_num != packet_num)
@@ -120,7 +126,15 @@ void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
     packet.length = 0;
     send_packet(packet, sockfd, pservaddr);
 };
-
+int check_packet_in_lost_packets(int lost_packets_array[], int lost_packets, int packet_num){
+    int i;
+    for(i = 0;i < lost_packets;i++){
+        if(lost_packets_array[i] == packet_num){
+            return 1;
+        }
+    }
+    return 0;
+}
 void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 {
     Packet packet;
