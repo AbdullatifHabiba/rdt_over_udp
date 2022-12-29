@@ -21,10 +21,6 @@ int main(void){
           perror("Unable to open file!");
          exit(1);
     }
-<<<<<<< HEAD
-=======
-    printf("file opened \n");
->>>>>>> b68a5e78c7843c5699fe3f8988eeae7c41f1eac6
 
     char *line = NULL;
     size_t len = 0;
@@ -40,16 +36,10 @@ int main(void){
     fclose(fp);
     free(line);     
 
-<<<<<<< HEAD
 
     // printf("port = %d ",port);
     // printf("address = %s ",address);
     // printf("file = %s \n ",file);
-=======
-    printf("port = %d ",port);
-    printf("address = %s ",address);
-    printf("file = %s \n ",file);
->>>>>>> b68a5e78c7843c5699fe3f8988eeae7c41f1eac6
 
     int number_of_packets;
     int socket_client;
