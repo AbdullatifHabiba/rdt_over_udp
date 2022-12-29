@@ -12,10 +12,8 @@
 #include <pthread.h>
 #include <errno.h>
 
-
 #include "StopAndWait.h"
 #include "SelectiveRep.h"
-
 
 int main(void){
    FILE *fp = fopen("client.in", "r");
@@ -23,44 +21,53 @@ int main(void){
           perror("Unable to open file!");
          exit(1);
     }
+<<<<<<< HEAD
+=======
+    printf("file opened \n");
+>>>>>>> b68a5e78c7843c5699fe3f8988eeae7c41f1eac6
 
-       char *line = NULL;
-       size_t len = 0;
-      int port;
-      char*address =NULL;
-      char*file =NULL;
+    char *line = NULL;
+    size_t len = 0;
+    int port;
+    char* address = NULL;
+    char* file = NULL;
  
-       getline(&address, &len, fp);
-       getline(&line, &len, fp);
-       sscanf(line, "%d", &port);
-       getline(&file, &len, fp);
+    getline(&address, &len, fp);
+    getline(&line, &len, fp);
+    sscanf(line, "%d", &port);
+    getline(&file, &len, fp);
 
     fclose(fp);
     free(line);     
 
+<<<<<<< HEAD
 
     // printf("port = %d ",port);
     // printf("address = %s ",address);
     // printf("file = %s \n ",file);
+=======
+    printf("port = %d ",port);
+    printf("address = %s ",address);
+    printf("file = %s \n ",file);
+>>>>>>> b68a5e78c7843c5699fe3f8988eeae7c41f1eac6
 
     int number_of_packets;
     int socket_client;
-       // Create socket:
+    // Create socket:
     socket_client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    
     if(socket_client < 0){
         printf("Error while creating socket\n");
         return -1;
     }
-     printf("Socket created successfully\n");
-   
+    printf("Socket created successfully\n");
+
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = inet_addr(address);
-    //connect to server
 
+    //connect to server
     if (connect(socket_client, (struct sockaddr*)&server_addr, sizeof(server_addr)) != 0)
     {
         printf("connection error\n");
@@ -72,10 +79,10 @@ int main(void){
     scanf("%d",&type);
     if(type==1){
         Packet packet;
-        packet.checksum=0;
-        packet.length=0;
-        packet.seq_num=0;
-        strcpy( packet.data,file);
+        packet.checksum = 0;
+        packet.length = 0;
+        packet.seq_num = 0;
+        strcpy(packet.data, file);
         send_packet(packet,socket_client,(struct sockaddr *)&server_addr);
         Ack_packet ack_p = recv_ack_packet(socket_client,(struct sockaddr *)& server_addr);
 
@@ -84,22 +91,10 @@ int main(void){
         printf(" number of packets= %d\n",number_of_packets);
         FILE*out= fopen(file,"wb");
         recv_file(out,socket_client,(struct sockaddr *)& server_addr);
-
-
-
-    //stop and wait
-    //create packet to send to server
-    //send packet to server
-    //recieve ack packet from server
-    
     }
     else if(type ==2)
     {
-          //selectiveRepeat
-          // create packet to send to server
-    //send packet to server
-    //recieve ack packet from server
-    
+        
     }
     else{
         printf("choose correct type");

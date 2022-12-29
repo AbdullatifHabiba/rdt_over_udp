@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,7 +13,8 @@
 #include <errno.h>
 #include <math.h>
 #include "StopAndWait.h"
-# define maxbuffer 500
+
+#define maxbuffer 500
 
 int packet_numbers = 0;
 
@@ -35,8 +35,8 @@ Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
      printf("packet %d received.\n", packet.seq_num);
 
     return packet;
-    
-};
+}
+
 Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
 {
     Ack_packet ack_packet;
@@ -47,43 +47,44 @@ Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr)
     if (n < 0)
         perror("ERROR in recvfrom");
     return ack_packet;
-};
+}
 
 void send_packet(Packet packet, int sockfd,  struct sockaddr *pservaddr)
 {
     int n;
     n = sendto(sockfd, &packet, sizeof(packet), MSG_CONFIRM, pservaddr, sizeof(*pservaddr));
     if (n < 0) perror("ERROR in sendto packet");
-};
+}
+
 void send_ack_packet( Ack_packet ack_packet, int sockfd,  struct sockaddr *pservaddr)
 {
     int n;
     n = sendto(sockfd, (void*)&ack_packet, sizeof(ack_packet), MSG_CONFIRM, pservaddr, sizeof(*pservaddr));
     if (n < 0) perror("ERROR in sendto ack packet");
     
-};
+}
+
 int get_number_of_packets() {
     return packet_numbers;
 }
+
 void  get_loss_packets(double prob_of_loss, int seednumber){
     srand(seednumber);
     int n_packets=get_number_of_packets();
     int i;
     int lost_packets= ceil(n_packets*prob_of_loss);
-     int lost_packets_array[lost_packets];
-    for(i=0;i<lost_packets;i++){
+    int lost_packets_array[lost_packets];
+    for(i = 0;i < lost_packets;i++)
+    {
         double random = (double)(rand()%n_packets);
-        if(lost_packets_array[i]==random){
+        if(lost_packets_array[i] == random){
             i--;
         }
         else{
-            lost_packets_array[i]=random;
+            lost_packets_array[i] = random;
         }
-       
     }
-
 }
-
 
 void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
 {
@@ -105,7 +106,7 @@ void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
     packet.seq_num = packet_num;
     packet.length = 0;
     send_packet(packet, sockfd,pservaddr);
-};
+}
 
 void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 {
@@ -120,12 +121,7 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
         Ack_packet p;
     
         p.ack_num=packet_numbers;
-        
         send_ack_packet(p, sockfd, pservaddr);
         packet_numbers++;
     }
-};
-
-
-
-
+}

@@ -11,6 +11,9 @@
 #include <signal.h>
 #include <pthread.h>
 #include <errno.h>
+
+# define maxbuffer 500
+
   struct pack ;
   struct ack_pack;
   
@@ -32,6 +35,6 @@ void send_ack_packet( Ack_packet ack,int sockfd, struct sockaddr *servaddr);
 Packet recv_packet(int packet_num,int sockfd, struct sockaddr *servaddr );
 Ack_packet recv_ack_packet(int sockfd, struct sockaddr *servaddr);
 void get_loss_packet(double prob_of_loss, int seednumber);
-void sand_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
+void send_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
 void recv_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
-
+int get_size(FILE* file);
