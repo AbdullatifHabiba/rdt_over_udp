@@ -29,9 +29,7 @@ Packet recv_packet(int packet_num,int sockfd,struct sockaddr *pservaddr)
         perror("ERROR in recvfrom");
         return packet;
     }
-    if (packet.seq_num != packet_num)
-        perror("ERROR: packet out of order");
-
+    
      printf("packet %d received.\n", packet.seq_num);
 
     return packet;
@@ -117,11 +115,18 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
         packet = recv_packet(packet_numbers, sockfd, pservaddr);
         if (packet.length == 0)
             break;
+        if (packet.seq_num != packet_numbers)
+        {
+        // perror("ERROR: packet out of order");
+        Ack_packet p;
+        p.ack_num=packet_numbers;
+        send_ack_packet(p, sockfd, pservaddr);
+        }else{ 
         fwrite(packet.data, 1, packet.length, fp);
         Ack_packet p;
-    
         p.ack_num=packet_numbers;
         send_ack_packet(p, sockfd, pservaddr);
         packet_numbers++;
+    }
     }
 }

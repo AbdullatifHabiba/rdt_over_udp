@@ -58,3 +58,5 @@ void send_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
 void recv_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
 void send_file_by_window(FILE *fp, int sockfd,  struct sockaddr *pservaddr);
 int get_size(FILE* file);
+int check_timeout(clock_t t1);
+
