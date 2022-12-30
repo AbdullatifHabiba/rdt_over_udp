@@ -32,6 +32,18 @@
     uint32_t length;
 }Ack_packet;
 
+struct map;
+typedef struct map {
+    Packet packet;
+    int index;
+    clock_t time;
+}windowMap;
+
+struct ackmap;
+typedef struct ackmap {
+    Ack_packet ack_packet;
+    int index;
+}ackMap;
 int number_of_Packets;
 double loss_prob;
 int seed_num;
@@ -44,4 +56,5 @@ Ack_packet recv_ack_packet(int sockfd, struct sockaddr *servaddr, int time_out, 
 void get_loss_packet(double prob_of_loss, int seednumber, int lost_packets_array[]);
 void send_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
 void recv_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
+void send_file_by_window(FILE *fp, int sockfd,  struct sockaddr *pservaddr);
 int get_size(FILE* file);

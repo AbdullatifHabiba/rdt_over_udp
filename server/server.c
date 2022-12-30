@@ -77,29 +77,43 @@ int main(void){
     loss_prob=prob;
     seed_num=seed;
     printf("choose type of communication 1:stopandwait 2:selectiveRepeat = ");
-    scanf("%d",&type);
-    if(type==1){
+
+    //  scanf("%d",&type);
+
+    // if(type==1){
+    //     Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
+    //     printf("%s\n",pak.data);
+    //     Ack_packet ackk;
+    //     FILE*fp=fopen (pak.data, "rb");
+    //     int s= (int)ceil (1.0*get_size(fp)/500);
+    //     ackk.ack_num= s;
+    //     ackk.checksum=0;
+    //     ackk.length=0;
+    //     number_of_Packets=s;
+    //     send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
+    //     send_file(fp,socket_server,(struct sockaddr*)&clientAddress);
+    //     }
+    //     else if(type ==2)
+    //     {
         Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
         printf("%s\n",pak.data);
         Ack_packet ackk;
-        FILE*fp=fopen (pak.data, "rb");
-        int s= (int)ceil (1.0*get_size(fp)/500);
+        FILE*fp1=fopen (pak.data, "rb");
+        int s= (int)ceil (1.0*get_size(fp1)/500);
         ackk.ack_num= s;
         ackk.checksum=0;
         ackk.length=0;
         number_of_Packets=s;
         send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-        send_file(fp,socket_server,(struct sockaddr*)&clientAddress);
-        }
-        else if(type ==2)
-        {
-        }
-        else{
-            printf("choose correct type");
-            exit(1);
-        }
-    /* while (1)
-    {
+        send_file_by_window(fp1,socket_server,(struct sockaddr*)&clientAddress);
+        
+    //     }
+    //     else{
+    //         printf("choose correct type");
+    //         exit(1);
+    //     }
+    // /* while (1)
+   /* {
         memset(&clientAddress, 0, sizeof(clientAddress));
         pid_t pid = fork();
 
