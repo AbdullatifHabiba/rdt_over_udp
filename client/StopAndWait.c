@@ -117,10 +117,11 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
             break;
         if (packet.seq_num != packet_numbers)
         {
-         perror("ERROR: packet out of order");
+         //perror("ERROR: packet out of order sh ");printf("%d\n",packet_numbers);
+
         Ack_packet p;
         p.ack_num=packet_numbers;
-      //  send_ack_packet(p, sockfd, pservaddr);
+        send_ack_packet(p, sockfd, pservaddr);
         }else{ 
         fwrite(packet.data, 1, packet.length, fp);
         Ack_packet p;

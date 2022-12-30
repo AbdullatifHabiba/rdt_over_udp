@@ -58,7 +58,7 @@ Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr, int time_out,
 }
     int tmp =0;
 
-Ack_packet recv_ack_packet_sel(int start,int sockfd, struct sockaddr *pservaddr, int time_out)
+Ack_packet recv_ack_packet_sel(int sockfd, struct sockaddr *pservaddr, int time_out,int *state)
 {
     struct pollfd pfd = {.fd = sockfd, .events = POLLIN};
     Ack_packet ack_packet;
@@ -68,8 +68,14 @@ Ack_packet recv_ack_packet_sel(int start,int sockfd, struct sockaddr *pservaddr,
     if (poll(&pfd, 1, 1000) != 0)
     {
         n = recvfrom(sockfd, &ack_packet, sizeof(ack_packet), MSG_WAITALL, pservaddr, &len);
+        tmp = ack_packet.ack_num;
          return ack_packet;
 
+    }
+    else{
+      printf("time out\n");
+        *state=0;
+         ack_packet.ack_num=tmp;
     }
     
 
@@ -223,7 +229,7 @@ int add = 1;
 int dec = 2;
 int start_window = 0;
 int end_window = 0;
-int state = 0;
+int state = 1;
 int congestion = 0;
 int window_size = 5;
 int sockfd;
@@ -231,41 +237,7 @@ FILE *fp;
 windowMap window;
 ackMap acked;
 
-void rec_select_acks(struct sockaddr *pservaddr)
-{
-    while (start_window < number_of_Packets)
-    {
-        printf("cwnd = %d \n", cwnd);
-        int status;
-        Ack_packet ack_packet = recv_ack_packet_sel(1,sockfd, pservaddr, time_out);
-        if (status == 1)
-        {
-            if (window.index != window_size - 1)
-            {
-                acked.ack_packet = ack_packet;
-                while (start_window <= end_window && acked.index != window_size - 1)
-                {
-                    start_window++;
-                }
-                if (cwnd < ssthread)
-                {
 
-                    cwnd *= 2;
-                }
-                else if (cwnd < number_of_Packets)
-                {
-                    cwnd += add;
-                }
-                end_window = min(start_window + cwnd - 1, number_of_Packets - 1);
-            }
-        }
-    }
-    return;
-}
-
-
-
- 
 
 void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 {
@@ -284,10 +256,9 @@ void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
     printf("lostsize= %d\n", size);
 
     //
-    while (start_window < number_of_Packets)
+    while (start_window <= number_of_Packets)
     {
         printf("start window = %d   end window = %d\n", start_window, end_window);
-        int start = start_window;
         for (int index = start; index <= end_window; index++)
         {
 
@@ -296,12 +267,7 @@ void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
             int ch = check_packet_in_lost_packets(lost, size, index);
             if (ch == 1)
             {
-                clock_t stime = clock();
-                window.index = index;
-                window.time = stime;
-                window.packet = packet;
                 printf("wl =%d \n", window.packet.seq_num);
-                state = 1;
             }
             else
             {
@@ -311,19 +277,17 @@ void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
         }
       
 
-        Ack_packet ac = recv_ack_packet(sockfd, pservaddr, time_out,&state);
+        Ack_packet ac = recv_ack_packet_sel(sockfd, pservaddr, time_out,&state);
+        printf("state %d ackk %d\n",state,ac.ack_num);
+        start_window = ac.ack_num;
+
         // check time out
-        if (state == 1 )
+        if (state == 0 )
         {
-            start_window = window.index;
-            end_window = start_window;
-            state = 0;
+            state = 1;
             cwnd = 1;
-            window.index = 0;
-            window.time = 0;
-            continue;
-        }
-        // start_window=end_window;
+           
+        }else{
         // check congestion
         if (cwnd < ssthread)
         {
@@ -338,10 +302,10 @@ void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 
             cwnd /= 2;
         }
-        end_window = min(start_window + cwnd - 1, number_of_Packets - 1);
+        }
+        end_window = min(start_window + cwnd - 1, number_of_Packets );
     }
     
-    send_packet(allPackets[number_of_Packets-1], sockfd, pservaddr);
 }
 int check_timeout(clock_t t1)
 {

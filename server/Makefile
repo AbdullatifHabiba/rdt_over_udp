@@ -1,5 +1,5 @@
  cc = gcc
 server:
-	$(cc) server.c StopAndWait.c -lm -pthread -o server 
+	$(cc) server.c StopAndWait.c -lm  -o server 
 clean:  
 	rm *.o server      
