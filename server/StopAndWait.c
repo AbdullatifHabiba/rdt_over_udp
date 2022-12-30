@@ -12,6 +12,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <math.h>
+#include <poll.h>
 #include "StopAndWait.h"
 
 int sand_index = 0;
@@ -55,18 +56,22 @@ Ack_packet recv_ack_packet(int sockfd, struct sockaddr *pservaddr, int time_out,
     Ack_packet ack_packet2;
     return ack_packet2;
 }
-Ack_packet recv_ack_packet_sel(int sockfd, struct sockaddr *pservaddr, int time_out)
-{
+    int tmp =0;
 
+Ack_packet recv_ack_packet_sel(int start,int sockfd, struct sockaddr *pservaddr, int time_out)
+{
+    struct pollfd pfd = {.fd = sockfd, .events = POLLIN};
     Ack_packet ack_packet;
     int n;
     socklen_t len;
     len = sizeof(*pservaddr);
-    n = recvfrom(sockfd, &ack_packet, sizeof(ack_packet), MSG_WAITALL, pservaddr, &len);
-    if (n > 0)
+    if (poll(&pfd, 1, 1000) != 0)
     {
-        return ack_packet;
+        n = recvfrom(sockfd, &ack_packet, sizeof(ack_packet), MSG_WAITALL, pservaddr, &len);
+         return ack_packet;
+
     }
+    
 
     return ack_packet;
 }
@@ -212,7 +217,7 @@ void read_packets_from_file(FILE *fp, Packet packets[])
 }
 
 int dub_ack = 0;
-int cwnd = 0;
+int cwnd = 1;
 int ssthread = 64;
 int add = 1;
 int dec = 2;
@@ -232,7 +237,7 @@ void rec_select_acks(struct sockaddr *pservaddr)
     {
         printf("cwnd = %d \n", cwnd);
         int status;
-        Ack_packet ack_packet = recv_ack_packet_sel(sockfd, pservaddr, time_out);
+        Ack_packet ack_packet = recv_ack_packet_sel(1,sockfd, pservaddr, time_out);
         if (status == 1)
         {
             if (window.index != window_size - 1)
@@ -258,6 +263,10 @@ void rec_select_acks(struct sockaddr *pservaddr)
     return;
 }
 
+
+
+ 
+
 void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 {
 
@@ -277,8 +286,9 @@ void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
     //
     while (start_window < number_of_Packets)
     {
-            printf("start window = %d\n",start_window);
-        for (int index = start_window; index <= end_window; index++)
+        printf("start window = %d   end window = %d\n", start_window, end_window);
+        int start = start_window;
+        for (int index = start; index <= end_window; index++)
         {
 
             Packet packet = allPackets[index];
@@ -296,46 +306,42 @@ void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
             else
             {
                 send_packet(packet, sockfd, pservaddr);
-
-               
             }
-             Ack_packet rec = recv_ack_packet_sel(sockfd, pservaddr, time_out);
-                 printf("ackkk =%d packet.seq_num =%d \n", rec.ack_num,packet.seq_num);
-
-                if (rec.ack_num != packet.seq_num+1)
-                {
-                    window.time= clock();
-                    window.index = packet.seq_num;
-                    state = 1;
-                }
-            
+            start_window++;
         }
-        start_window=end_window;
-        //check time out
+      
 
-        if (state == 1 && check_timeout(window.time))
+        Ack_packet ac = recv_ack_packet(sockfd, pservaddr, time_out,&state);
+        // check time out
+        if (state == 1 )
         {
             start_window = window.index;
             end_window = start_window;
             state = 0;
             cwnd = 1;
+            window.index = 0;
+            window.time = 0;
             continue;
         }
-
-       // check congestion
+        // start_window=end_window;
+        // check congestion
         if (cwnd < ssthread)
         {
-            end_window = start_window + 2 * cwnd;
+            cwnd *= 2;
         }
-        else if(cwnd>ssthread && ssthread<number_of_Packets){
-            end_window++;
-
-        }else
+        else if (cwnd > ssthread && cwnd < number_of_Packets)
         {
-            end_window = start_window + cwnd / 2;
+            cwnd++;
         }
+        else
+        {
 
+            cwnd /= 2;
+        }
+        end_window = min(start_window + cwnd - 1, number_of_Packets - 1);
     }
+    
+    send_packet(allPackets[number_of_Packets-1], sockfd, pservaddr);
 }
 int check_timeout(clock_t t1)
 {
@@ -356,12 +362,4 @@ int max(int x, int y)
     if (x > y)
         return x;
     return y;
-}
-void clear_window(windowMap packs[])
-{
-    memset(packs, 0, sizeof(packs));
-}
-void clear_acked(ackMap acks[])
-{
-    memset(acks, 0, sizeof(acks));
 }

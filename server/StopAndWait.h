@@ -58,5 +58,9 @@ void send_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
 void recv_file(FILE *filename, int sockfd, struct sockaddr *servaddr);
 void send_file_by_window(FILE *fp, int sockfd,  struct sockaddr *pservaddr);
 int get_size(FILE* file);
+int check_packet_in_lost_packets(int lost_packets_array[], int lost_packets, int packet_num);
 int check_timeout(clock_t t1);
+int max(int x, int y);
+int min(int x, int y);
+
 

@@ -106,6 +106,7 @@ int main(void){
         number_of_Packets=s;
         send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
         send_file_by_window(fp1,socket_server,(struct sockaddr*)&clientAddress);
+      //  send_file(fp1,socket_server,(struct sockaddr*)&clientAddress);
         
     //     }
     //     else{
