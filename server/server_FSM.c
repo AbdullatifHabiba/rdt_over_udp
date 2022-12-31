@@ -75,7 +75,7 @@ Ack_packet recv_ack_packet_sel(int sockfd, struct sockaddr *pservaddr, int time_
     }
     else{
       printf("time out\n");
-        *state=0;
+        *state = 0;
         ack_packet.ack_num = tmp;
     }
     
@@ -212,7 +212,7 @@ int ssthread = 64;
 int add = 1;
 int dec = 2;
 int start_window = 0;
-int end_window = 1;
+int end_window = 0;
 int state = 1;
 int congestion = 0;
 int window_size = 5;
@@ -236,7 +236,7 @@ void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
     while (start_window <= number_of_Packets)
     {
         printf("start window = %d   end window = %d\n", start_window, end_window);
-        for (int index = start_window; index < end_window; index++)
+        for (int index = start_window; index <= end_window; index++)
         {
             Packet packet = allPackets[index];
             // los
@@ -277,7 +277,7 @@ void send_file_by_window(FILE *fp, int sockfd, struct sockaddr *pservaddr)
                 cwnd /= 2;
             }            
         }
-        end_window = min(start_window + cwnd, number_of_Packets + 1);
+        end_window = min(start_window + cwnd - 1, number_of_Packets);
     }    
 }
 
