@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <math.h>
-#include "StopAndWait.h"
+#include "client_FSM.h"
 
 #define maxbuffer 500
 
@@ -62,50 +62,6 @@ void send_ack_packet( Ack_packet ack_packet, int sockfd,  struct sockaddr *pserv
     
 }
 
-int get_number_of_packets() {
-    return packet_numbers;
-}
-
-void  get_loss_packets(double prob_of_loss, int seednumber){
-    srand(seednumber);
-    int n_packets=get_number_of_packets();
-    int i;
-    int lost_packets= ceil(n_packets*prob_of_loss);
-    int lost_packets_array[lost_packets];
-    for(i = 0;i < lost_packets;i++)
-    {
-        double random = (double)(rand()%n_packets);
-        if(lost_packets_array[i] == random){
-            i--;
-        }
-        else{
-            lost_packets_array[i] = random;
-        }
-    }
-}
-
-void send_file(FILE *fp, int sockfd,  struct sockaddr *pservaddr)
-{
-    Packet packet;
-    int packet_num = 0;
-    int ack_num = 0;
-    int n;
-    while (1)
-    {
-        packet.seq_num = packet_num;
-        packet.length = fread(packet.data, 1, maxbuffer, fp);
-        if (packet.length == 0)break;
-       send_packet(packet, sockfd, pservaddr);
-       Ack_packet ack_p = recv_ack_packet(sockfd,pservaddr);
-        if (ack_p.ack_num != packet_num)
-            perror("ERROR: ack out of order");
-        packet_num++;
-    }
-    packet.seq_num = packet_num;
-    packet.length = 0;
-    send_packet(packet, sockfd,pservaddr);
-}
-
 void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
 {
     Packet packet;
@@ -117,17 +73,17 @@ void recv_file(FILE *fp, int sockfd, struct sockaddr *pservaddr)
             break;
         if (packet.seq_num != packet_numbers)
         {
-         //perror("ERROR: packet out of order sh ");printf("%d\n",packet_numbers);
-
-        Ack_packet p;
-        p.ack_num=packet_numbers;
-        send_ack_packet(p, sockfd, pservaddr);
-        }else{ 
-        fwrite(packet.data, 1, packet.length, fp);
-        Ack_packet p;
-        p.ack_num=packet_numbers;
-        send_ack_packet(p, sockfd, pservaddr);
-        packet_numbers++;
-    }
+            Ack_packet p;
+            p.ack_num = packet_numbers;
+            send_ack_packet(p, sockfd, pservaddr);
+        }
+        else
+        { 
+            fwrite(packet.data, 1, packet.length, fp);
+            Ack_packet p;
+            p.ack_num = packet_numbers;
+            send_ack_packet(p, sockfd, pservaddr);
+            packet_numbers++;
+        }
     }
 }

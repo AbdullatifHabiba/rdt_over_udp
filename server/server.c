@@ -11,10 +11,8 @@
 #include <signal.h>
 #include <pthread.h>
 #include <errno.h>
-#include "StopAndWait.h"
+#include "server_FSM.h"
 #include <math.h>
-#include "SelectiveRep.h"
-
 
 int main(void){
     FILE *fp = fopen("server.in", "r");
@@ -65,99 +63,28 @@ int main(void){
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     // Bind to the set port and IP:
-    if(bind(socket_server, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
+    if (bind(socket_server, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0)
+    {
         printf("Couldn't bind to the port\n");
         return -1;
     }
+
     printf("Done with binding\n");
-        
     struct sockaddr_in clientAddress;
     memset(&clientAddress, 0, sizeof(clientAddress));
-    int type;
-    loss_prob=prob;
-    seed_num=seed;
-    printf("choose type of communication 1:stopandwait 2:selectiveRepeat = ");
-
-    //  scanf("%d",&type);
-
-    // if(type==1){
-    //     Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
-    //     printf("%s\n",pak.data);
-    //     Ack_packet ackk;
-    //     FILE*fp=fopen (pak.data, "rb");
-    //     int s= (int)ceil (1.0*get_size(fp)/500);
-    //     ackk.ack_num= s;
-    //     ackk.checksum=0;
-    //     ackk.length=0;
-    //     number_of_Packets=s;
-    //     send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-    //     send_file(fp,socket_server,(struct sockaddr*)&clientAddress);
-    //     }
-    //     else if(type ==2)
-    //     {
-        Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress); 
-        printf("%s\n",pak.data);
-        Ack_packet ackk;
-        FILE*fp1=fopen (pak.data, "rb");
-        int s= (int)ceil (1.0*get_size(fp1)/500);
-        ackk.ack_num= s;
-        ackk.checksum=0;
-        ackk.length=0;
-        number_of_Packets=s;
-        send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-        send_file_by_window(fp1,socket_server,(struct sockaddr*)&clientAddress);
-      //  send_file(fp1,socket_server,(struct sockaddr*)&clientAddress);
-        
-    //     }
-    //     else{
-    //         printf("choose correct type");
-    //         exit(1);
-    //     }
-    // /* while (1)
-   /* {
-        memset(&clientAddress, 0, sizeof(clientAddress));
-        pid_t pid = fork();
-
-        if (pid == -1)
-        {
-            close(socket_server);
-            continue;
-        }
-        if (pid == 0)
-        {
-            int type;
-            scanf("choose type of communication 1:stopandwait 2:selectiveRepeat \n %d",&type);
-            if(type==1){
-                Packet pak=   recv_packet(0,socket_server,(struct sockaddr*)&clientAddress)   ; 
-                printf("%s",pak.data);
-                Ack_packet ackk;
-                ackk.ack_num=1;
-                ackk.checksum=0;
-                ackk.length=0;
-            
-                send_ack_packet(ackk,socket_server,(struct sockaddr*)&clientAddress);
-                //stop and wait
-                // create packet to send to client
-                //send packet to client
-                //recieve ack packet from client    
-            }
-            else if(type ==2)
-            {
-                //selectiveRepeat
-                // create packet to send to client
-                //send packet to client
-                //recieve ack packet from client   
-            }
-            else{
-                printf("choose correct type");
-                exit(1);
-            }         
-        }
-        else
-        {
-            close(socket_server);
-        }
-    }*/
+    loss_prob = prob;
+    seed_num = seed;
+    Packet pak = recv_packet(0, socket_server, (struct sockaddr*) &clientAddress); 
+    printf("%s\n", pak.data);
+    Ack_packet ackk;
+    FILE* fp1 = fopen (pak.data, "rb");
+    int s = (int) ceil (1.0 * get_size(fp1) / 500);
+    ackk.ack_num = s;
+    ackk.checksum = 0;
+    ackk.length = 0;
+    number_of_Packets = s;
+    send_ack_packet(ackk, socket_server, (struct sockaddr*) &clientAddress);
+    send_file_by_window(fp1,socket_server, (struct sockaddr*) &clientAddress);
     
     return 0;
 }
